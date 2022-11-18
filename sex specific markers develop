@@ -23,5 +23,5 @@ samtools depth -f bam.list > all.depth
 ##male specific 2b-RAD tags identifying
 less all.depth|perl -e '{while(<>){@t=split;$c=0;$d=0;for $i(2..10){if($t[$i]==0){$c++;}}for $i(11..19){if($t[$i]>0){$d++;}}if($c>8 and $d==9){print ;}}}' > male.loic.list
 
-##male-specific sequences extraction
+##male specific sequences extraction
 seqtk subseq cm_genome.fa male.loic.position > male_specific.fa
