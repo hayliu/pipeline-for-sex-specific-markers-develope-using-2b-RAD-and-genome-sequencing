@@ -1,0 +1,24 @@
+##male genome de novo
+SOAPdenovo-63mer all -s config_file -K 41 -o kmer41/kmer41 -D 1 -d 1 -p 80 -R  1 > K41.log 2 > K41.err
+
+##2b-RAD reads filtering
+perl reads_proc.pl -i rawdata -p1 rawdata/cm_01.fastq -p2 rawdata/cm_02.fastq -b [ATGC]{9}AC[ATGC]{5}CTCC[ATGC]{7} -l 27 
+
+##male genome index
+bwa index cm_genome.fa
+
+##2b-RAD reads mapping to male genome
+ls *fasta |cut -d"." -f 1 | sort -u | while read id; do
+bwa aln -t 80 cm_genome.fa ${id}.fasta > ../bwa/sai/${id}.aln_sa.sai
+done
+
+ls *fasta |cut -d"." -f 1 | sort -u | while read id; do
+bwa samse cm_genome.fa ../bwa/sai/${id}.aln_sa.sai ${id}.fasta | samtools sort -@ 16 -o ../bwa/bam/${id}.bam -
+done
+
+##2b-RAD reads depth statistics
+ls *.bam > bam.list
+samtools depth -f bam.list > all.depth
+
+##male specific 2b-RAD tags identifing
+less all.depth|perl -e '{while(<>){@t=split;$c=0;$d=0;for $i(2..10){if($t[$i]==0){$c++;}}for $i(11..19){if($t[$i]>0){$d++;}}if($c>8 and $d==9){print ;}}}' > male.loic.list
